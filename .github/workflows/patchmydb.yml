@@ -9,7 +9,7 @@ on:
 
 jobs:
   retrieve-secret-and-run-script:
-    runs-on: [self-hosted, linux, x64] # Specify your self-hosted runner labels here
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
