@@ -43,4 +43,4 @@ jobs:
       run: |
         curl -s -w "%{http_code}" -X POST -u $DB_USERNAME:$DB_PASSWORD -H "Content-Type: application/json" \
         -d '{ "extra_vars": "{\"change_number\":\"$change_number\"}" }' \
-        "$workflow_template" | jq "."
+        "$template_url" | jq "."
