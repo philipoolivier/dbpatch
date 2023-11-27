@@ -1,10 +1,10 @@
-name: Retrieve Secret and Run Script
+name: Retrieve DB Credentials and Run Script
 
 on:
-    workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
-  retrieve-secret-and-run-script:
+  retrieve-credentials-and-run-script:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,17 +26,21 @@ jobs:
         vault write -field=token auth/approle/login role_id=${VAULT_ROLE_ID} secret_id=${VAULT_SECRET_ID} > VAULT_TOKEN
         echo "VAULT_TOKEN=$(cat VAULT_TOKEN)" >> $GITHUB_ENV
 
-    - name: Retrieve Secret from Vault
+    - name: Retrieve DB Credentials from Vault
       env:
         VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
         VAULT_TOKEN: ${{ env.VAULT_TOKEN }}
       run: |
-        SECRET_VALUE=$(vault kv get -field=my_field secret/my_secret)
-        echo "SECRET_VALUE=${SECRET_VALUE}" >> $GITHUB_ENV
+        DB_USERNAME=$(vault kv get -field=db_username secret/my_db_secret)
+        DB_PASSWORD=$(vault kv get -field=db_password secret/my_db_secret)
+        echo "DB_USERNAME=${DB_USERNAME}" >> $GITHUB_ENV
+        echo "DB_PASSWORD=${DB_PASSWORD}" >> $GITHUB_ENV
 
-    - name: Run bash script with the secret
+    - name: Run API Post Command with DB Credentials
       env:
-        MY_SECRET: ${{ env.SECRET_VALUE }}
+        DB_USERNAME: ${{ env.DB_USERNAME }}
+        DB_PASSWORD: ${{ env.DB_PASSWORD }}
       run: |
-        chmod +x ./path/to/your-script.sh
-        ./path/to/your-script.sh
+        curl -s -w "%{http_code}" -X POST -u $DB_USERNAME:$DB_PASSWORD -H "Content-Type: application/json" \
+        -d '{ "extra_vars": "{\"change_number\":\"$change_number\"}" }' \
+        "$workflow_template" | jq "."
