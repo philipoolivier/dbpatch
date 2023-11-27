@@ -1,11 +1,7 @@
 name: Retrieve Secret and Run Script
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:
+    workflow_dispatch:
 
 jobs:
   retrieve-secret-and-run-script:
