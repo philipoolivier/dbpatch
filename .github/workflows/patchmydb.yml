@@ -31,16 +31,16 @@ jobs:
         VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
         VAULT_TOKEN: ${{ env.VAULT_TOKEN }}
       run: |
-        DB_USERNAME=$(vault kv get -field=db_username secret/my_db_secret)
-        DB_PASSWORD=$(vault kv get -field=db_password secret/my_db_secret)
-        echo "DB_USERNAME=${DB_USERNAME}" >> $GITHUB_ENV
-        echo "DB_PASSWORD=${DB_PASSWORD}" >> $GITHUB_ENV
+        API_USERNAME=$(vault kv get -field=api_username secret/my_api_secret)
+        API_PASSWORD=$(vault kv get -field=api_password secret/my_api_secret)
+        echo "API_USERNAME=${API_USERNAME}" >> $GITHUB_ENV
+        echo "API_PASSWORD=${API_PASSWORD}" >> $GITHUB_ENV
 
     - name: Run API Post Command with DB Credentials
       env:
-        DB_USERNAME: ${{ env.DB_USERNAME }}
-        DB_PASSWORD: ${{ env.DB_PASSWORD }}
+        API_USERNAME: ${{ env.API_USERNAME }}
+        API_PASSWORD: ${{ env.API_PASSWORD }}
       run: |
-        curl -s -w "%{http_code}" -X POST -u $DB_USERNAME:$DB_PASSWORD -H "Content-Type: application/json" \
+        curl -s -w "%{http_code}" -X POST -u $API_USERNAME:$API_PASSWORD -H "Content-Type: application/json" \
         -d '{ "extra_vars": "{\"change_number\":\"$change_number\"}" }' \
         "$template_url" | jq "."
