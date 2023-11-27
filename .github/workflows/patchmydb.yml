@@ -17,6 +17,14 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y vault
 
+    - name: Load .env file
+      run: |
+        set -a
+        source .env
+        set +a
+        echo "CHANGE_NUMBER=${CHANGE_NUMBER}" >> $GITHUB_ENV
+        echo "TEMPLATE_URL=${TEMPLATE_URL}" >> $GITHUB_ENV
+
     - name: Login to Vault
       env:
         VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
@@ -42,5 +50,5 @@ jobs:
         API_PASSWORD: ${{ env.API_PASSWORD }}
       run: |
         curl -s -w "%{http_code}" -X POST -u $API_USERNAME:$API_PASSWORD -H "Content-Type: application/json" \
-        -d '{ "extra_vars": "{\"change_number\":\"$change_number\"}" }' \
-        "$template_url" | jq "."
+        -d '{ "extra_vars": "{\"change_number\":\"$CHANGE_NUMBER\"}" }' \
+        "$TEMPLATE_URL" | jq "."
