@@ -1,0 +1,39 @@
+name: Retrieve Secret and Run Script
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  retrieve-secret-and-run-script:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Login to Vault
+      env:
+        VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+        VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
+        VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
+      run: |
+        vault write -field=token auth/approle/login role_id=${VAULT_ROLE_ID} secret_id=${VAULT_SECRET_ID} > VAULT_TOKEN
+        echo "VAULT_TOKEN=$(cat VAULT_TOKEN)" >> $GITHUB_ENV
+
+    - name: Retrieve Secret from Vault
+      env:
+        VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
+        VAULT_TOKEN: ${{ env.VAULT_TOKEN }}
+      run: |
+        SECRET_VALUE=$(vault kv get -field=my_field secret/my_secret)
+        echo "SECRET_VALUE=${SECRET_VALUE}" >> $GITHUB_ENV
+
+    - name: Run bash script with the secret
+      env:
+        MY_SECRET: ${{ env.SECRET_VALUE }}
+      run: |
+        chmod +x ./path/to/your-script.sh
+        ./path/to/your-script.sh
