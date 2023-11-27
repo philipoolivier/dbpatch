@@ -14,6 +14,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Install Vault CLI
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y vault
+
     - name: Login to Vault
       env:
         VAULT_ADDR: ${{ secrets.VAULT_ADDR }}
